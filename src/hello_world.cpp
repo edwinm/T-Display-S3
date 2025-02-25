@@ -31,6 +31,7 @@ void drawStaticContent() {
 }
 
 void setup() {
+  Serial.begin(9600);
   // Initialize display
   tft.init();
   tft.setRotation(1);
@@ -49,6 +50,7 @@ void setup() {
 
 
 void loop() {
+  Serial.println("Ping");
   // Nothing to do in the loop since it's static content
   delay(1000); // Add a delay to reduce power consumption
 }
