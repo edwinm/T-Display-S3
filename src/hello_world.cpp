@@ -2,6 +2,10 @@
 #include <OneButton.h>
 #include "pins.h"
 
+// Documentation
+// TFT_eSPI       https://github.com/Bodmer/TFT_eSPI#readme
+// OneButton      https://github.com/mathertel/OneButton#readme
+
 // Constants
 #define BRIGHTNESS_PIN 38
 #define BRIGHTNESS_CHANNEL 0
