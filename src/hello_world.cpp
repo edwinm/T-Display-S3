@@ -1,4 +1,6 @@
 #include <TFT_eSPI.h>
+#include <OneButton.h>
+#include "pins.h"
 
 // Constants
 #define BRIGHTNESS_PIN 38
@@ -9,18 +11,25 @@
 TFT_eSPI tft = TFT_eSPI();
 TFT_eSprite sprite = TFT_eSprite(&tft);
 
+// Buttons
+OneButton button1(PIN_BUTTON_1, true);
+OneButton button2(PIN_BUTTON_2, true);
+
 // Colors
 const uint16_t BACKGROUND = TFT_BLACK;
 
-void drawStaticContent() {
+uint32_t rectColor = TFT_RED;
+uint32_t textColor = TFT_GREEN;
+
+void render() {
   // Clear the sprite
   sprite.fillSprite(BACKGROUND);
   
   // Draw rectangle - parameters: x, y, width, height, color
-  sprite.drawRect(40, 60, 240, 80, TFT_RED);
+  sprite.drawRect(40, 60, 240, 80, rectColor);
   
   // Set text properties
-  sprite.setTextColor(TFT_GREEN, BACKGROUND);
+  sprite.setTextColor(textColor, BACKGROUND);
   sprite.setTextDatum(MC_DATUM); // Middle center alignment
   
   // Draw text - parameters: text, x, y, font
@@ -44,13 +53,35 @@ void setup() {
   ledcWrite(BRIGHTNESS_CHANNEL, BRIGHTNESS_VALUE);
   
   // Draw the static content
-  drawStaticContent();
+  render();
+
+  button1.attachPress([]() {
+    Serial.println("Button 1 press");
+    rectColor = TFT_BLUE;
+    render();
+  });
+
+  button1.attachClick([]() {
+    Serial.println("Button 1 click");
+    rectColor = TFT_RED;
+    render();
+  });
+
+  button2.attachPress([]() {
+    Serial.println("Button 2 press");
+    textColor = TFT_BLUE;
+    render();
+  });
+
+  button2.attachClick([]() {
+    Serial.println("Button 2 click");
+    textColor = TFT_GREEN;
+    render();
+  });
 }
 
-
-
 void loop() {
-  Serial.println("Ping");
-  // Nothing to do in the loop since it's static content
-  delay(1000); // Add a delay to reduce power consumption
+  button1.tick();
+  button2.tick();
+  delay(10); // Add a delay to reduce power consumption
 }
