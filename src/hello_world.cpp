@@ -43,6 +43,10 @@ void render() {
   sprite.pushSprite(0, 0);
 }
 
+uint32_t getVolt() {
+  return (analogRead(PIN_BAT_VOLT) * 2 * 3.3 * 1000) / 4096;
+}
+
 void setup() {
   Serial.begin(9600);
   // Initialize display
@@ -67,6 +71,10 @@ void setup() {
 
   button1.attachClick([]() {
     Serial.println("Button 1 click");
+    const uint16_t volt = getVolt();
+    Serial.print(volt);
+    Serial.println(" millivolt");
+
     rectColor = TFT_RED;
     render();
   });
