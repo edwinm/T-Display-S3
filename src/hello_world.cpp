@@ -8,10 +8,17 @@
 // TFT_eSPI       https://github.com/Bodmer/TFT_eSPI#readme
 // OneButton      https://github.com/mathertel/OneButton#readme
 
+enum button_status {
+  ON,
+  OFF
+};
+
 // Constants
 #define BRIGHTNESS_PIN 38
 #define BRIGHTNESS_CHANNEL 0
 #define BRIGHTNESS_VALUE 160
+#define WIDTH 320
+#define HEIGHT 170
 
 // Status
 #define STATUS_W 250
@@ -28,12 +35,19 @@ TFT_eSPI tft = TFT_eSPI();
 TFT_eSprite sprite = TFT_eSprite(&tft);
 
 // Buttons
+button_status button1_status = OFF;
+button_status button2_status = OFF;
+
+// Buttons
 OneButton button1(PIN_BUTTON_1, true);
 OneButton button2(PIN_BUTTON_2, true);
 
 const char* status = NULL;
 
 void render() {
+  // Clear the screen
+  tft.fillScreen(BACKGROUND);
+
   // Clear the sprite
   sprite.fillSprite(STATUS_BG);
   
@@ -47,7 +61,15 @@ void render() {
   }
   
   // Push to display
-  sprite.pushSprite((320-STATUS_W) / 2, (170-STATUS_H) / 2);
+  sprite.pushSprite((WIDTH-STATUS_W) / 2, (HEIGHT-STATUS_H) / 2);
+
+  if (button1_status == ON) {
+    tft.fillRect(WIDTH-8, HEIGHT-40, 8, 40, TFT_LIGHTGREY);
+  }
+
+  if (button2_status == ON) {
+    tft.fillRect(WIDTH-8, 0, 8, 40, TFT_LIGHTGREY);
+  }
 }
 
 uint32_t getVolt() {
@@ -82,25 +104,25 @@ void setup() {
   delay(1000);
 
   button1.attachPress([]() {
-    Serial.println("Button 1 press");
+    button1_status = ON;
     render();
   });
 
   button1.attachClick([]() {
-    Serial.println("Button 1 click");
-    const uint16_t volt = getVolt();
-    Serial.print(volt);
-    Serial.println(" millivolt");
+    // const uint16_t volt = getVolt();
+    // Serial.print(volt);
+    // Serial.println(" millivolt");
+    button1_status = OFF;
     render();
   });
 
   button2.attachPress([]() {
-    Serial.println("Button 2 press");
+    button2_status = ON;
     render();
   });
 
   button2.attachClick([]() {
-    Serial.println("Button 2 click");
+    button2_status = OFF;
     render();
   });
 
@@ -124,7 +146,7 @@ void setup() {
   }
 
   setStatus("Connected");
-  // Serial.println(WiFi.localIP());
+  Serial.println(WiFi.localIP());
 }
 
 void loop() {
