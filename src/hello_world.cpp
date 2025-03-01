@@ -13,6 +13,16 @@
 #define BRIGHTNESS_CHANNEL 0
 #define BRIGHTNESS_VALUE 160
 
+// Status
+#define STATUS_W 250
+#define STATUS_H 30
+
+// Colors
+#define BACKGROUND TFT_BLACK
+#define STATUS_FG TFT_WHITE
+#define STATUS_BG TFT_DARKGREEN
+
+
 // Display objects
 TFT_eSPI tft = TFT_eSPI();
 TFT_eSprite sprite = TFT_eSprite(&tft);
@@ -21,46 +31,42 @@ TFT_eSprite sprite = TFT_eSprite(&tft);
 OneButton button1(PIN_BUTTON_1, true);
 OneButton button2(PIN_BUTTON_2, true);
 
-// Colors
-const uint16_t BACKGROUND = TFT_BLACK;
-
-uint32_t rectColor = TFT_RED;
-uint32_t textColor = TFT_GREEN;
+const char* status = NULL;
 
 void render() {
   // Clear the sprite
-  sprite.fillSprite(BACKGROUND);
+  sprite.fillSprite(STATUS_BG);
   
-  // Draw rectangle - parameters: x, y, width, height, color
-  sprite.drawRect(40, 60, 240, 80, rectColor);
-  
-  // Set text properties
-  sprite.setTextColor(textColor, BACKGROUND);
-  sprite.setTextDatum(MC_DATUM); // Middle center alignment
-  
-  // Draw text - parameters: text, x, y, font
-  sprite.drawString("Hello world!", 160, 100, 4);
+  if (status) {
+      // Set text properties
+    sprite.setTextColor(STATUS_FG, STATUS_BG);
+    sprite.setTextDatum(MC_DATUM); // Middle center alignment
+    
+    // Draw text - parameters: text, x, y, font
+    sprite.drawString(status, STATUS_W/2, STATUS_H/2, 2);
+  }
   
   // Push to display
-  sprite.pushSprite(0, 0);
+  sprite.pushSprite((320-STATUS_W) / 2, (170-STATUS_H) / 2);
 }
 
 uint32_t getVolt() {
   return (analogRead(PIN_BAT_VOLT) * 2 * 3.3 * 1000) / 4096;
 }
 
+void setStatus(const char* message) {
+  status = message;
+  render();
+}
+
 void setup() {
   Serial.begin(9600);
-  // Giving it a little time because the serial monitor doesn't
-  // immediately attach. Want the firmware that's running to
-  // appear on each upload.
-  delay(2000);
 
   // Initialize display
   tft.init();
   tft.setRotation(1);
   tft.fillScreen(BACKGROUND);
-  sprite.createSprite(320, 170);
+  sprite.createSprite(STATUS_W, STATUS_H);
   
   // Set display brightness
   ledcSetup(BRIGHTNESS_CHANNEL, 10000, 8);
@@ -68,11 +74,15 @@ void setup() {
   ledcWrite(BRIGHTNESS_CHANNEL, BRIGHTNESS_VALUE);
   
   // Draw the static content
-  render();
+  setStatus("Starting up");
+
+  // Giving it a little time because the serial monitor doesn't
+  // immediately attach. Want the firmware that's running to
+  // appear on each upload.
+  delay(1000);
 
   button1.attachPress([]() {
     Serial.println("Button 1 press");
-    rectColor = TFT_BLUE;
     render();
   });
 
@@ -81,28 +91,23 @@ void setup() {
     const uint16_t volt = getVolt();
     Serial.print(volt);
     Serial.println(" millivolt");
-
-    rectColor = TFT_RED;
     render();
   });
 
   button2.attachPress([]() {
     Serial.println("Button 2 press");
-    textColor = TFT_BLUE;
     render();
   });
 
   button2.attachClick([]() {
     Serial.println("Button 2 click");
-    textColor = TFT_GREEN;
     render();
   });
 
   // Connect to Wifi.
-  Serial.println();
-  Serial.println();
-  Serial.print("Connecting to ");
-  Serial.println(WIFI_SSID);
+  char buffer[100]; // SSID max length is 32
+  sprintf(buffer, "Connecting to %s", WIFI_SSID);
+  setStatus(buffer);
 
   // Set WiFi to station mode and disconnect from an AP if it was previously connected
   WiFi.mode(WIFI_STA);
@@ -110,29 +115,16 @@ void setup() {
   delay(100);
 
   WiFi.begin(WIFI_SSID, WIFI_PASS);
-  Serial.println("Connecting...");
-
   while (WiFi.status() != WL_CONNECTED) {
-    // Check to see if connecting failed.
-    // This is due to incorrect credentials
     if (WiFi.status() == WL_CONNECT_FAILED) {
-      Serial.println("Failed to connect to WIFI. Please verify credentials: ");
-      Serial.println();
-      Serial.print("SSID: ");
-      Serial.println(WIFI_SSID);
-      Serial.print("Password: ");
-      Serial.println(WIFI_PASS);
-      Serial.println();
+      setStatus("Failed to connect to WiFi");
+      return;
     }
     delay(5000);
   }
 
-  Serial.println("");
-  Serial.println("WiFi connected");
-  Serial.println("IP address: ");
-  Serial.println(WiFi.localIP());
-
-  Serial.println("Hello World, I'm connected to the internets!!");
+  setStatus("Connected");
+  // Serial.println(WiFi.localIP());
 }
 
 void loop() {
