@@ -1,13 +1,14 @@
 #include <TFT_eSPI.h>
 #include <OneButton.h>
+#include <ezTime.h>
 #include "WiFi.h"
-#include "time.h"
 #include "pins.h"
 #include "wifi-credentials.h"
 
 // Documentation
 // TFT_eSPI       https://github.com/Bodmer/TFT_eSPI#readme
 // OneButton      https://github.com/mathertel/OneButton#readme
+// ezTime         https://github.com/ropg/ezTime
 
 enum button_status {
   ON,
@@ -30,11 +31,6 @@ enum button_status {
 #define STATUS_FG TFT_WHITE
 #define STATUS_BG TFT_DARKGREEN
 
-// Time settings
-const char* ntpServer = "pool.ntp.org";
-const long  gmtOffset_sec = 3600;
-const int   daylightOffset_sec = 3600;
-
 // Display objects
 TFT_eSPI tft = TFT_eSPI();
 TFT_eSprite sprite = TFT_eSprite(&tft);
@@ -46,6 +42,8 @@ button_status button2_status = OFF;
 // Buttons
 OneButton button1(PIN_BUTTON_1, true);
 OneButton button2(PIN_BUTTON_2, true);
+
+Timezone myTZ;
 
 const char* status = NULL;
 
@@ -88,12 +86,7 @@ void setStatus(const char* message) {
 
 void printLocalTime()
 {
-  struct tm timeinfo;
-  if(!getLocalTime(&timeinfo)){
-    Serial.println("Failed to obtain time");
-    return;
-  }
-  Serial.println(&timeinfo, "%A, %B %d %Y %H:%M:%S");
+  Serial.println(myTZ.dateTime());
 }
 
 void setup() {
@@ -164,12 +157,15 @@ void setup() {
   setStatus("Connected");
   Serial.println(WiFi.localIP());
 
-  configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
-  printLocalTime();
+  waitForSync();
+	// Provide official timezone names
+	// https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
+  myTZ.setLocation(F("Europe/Amsterdam"));
 }
 
 void loop() {
   button1.tick();
   button2.tick();
+  events();
   delay(10); // Add a delay to reduce power consumption
 }
