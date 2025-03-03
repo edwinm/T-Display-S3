@@ -3,7 +3,7 @@
 #include <ezTime.h>
 #include "WiFi.h"
 #include "pins.h"
-#include "wifi-credentials.h"
+#include "user_data.h";
 
 // Documentation
 // TFT_eSPI       https://github.com/Bodmer/TFT_eSPI#readme
@@ -157,10 +157,8 @@ void setup() {
   setStatus("Connected");
   Serial.println(WiFi.localIP());
 
+  myTZ.setLocation(TIMEZONE);
   waitForSync();
-	// Provide official timezone names
-	// https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
-  myTZ.setLocation(F("Europe/Amsterdam"));
 }
 
 void loop() {
