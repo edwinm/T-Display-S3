@@ -1,6 +1,7 @@
 #include <TFT_eSPI.h>
 #include <OneButton.h>
 #include "WiFi.h"
+#include "time.h"
 #include "pins.h"
 #include "wifi-credentials.h"
 
@@ -29,6 +30,10 @@ enum button_status {
 #define STATUS_FG TFT_WHITE
 #define STATUS_BG TFT_DARKGREEN
 
+// Time settings
+const char* ntpServer = "pool.ntp.org";
+const long  gmtOffset_sec = 3600;
+const int   daylightOffset_sec = 3600;
 
 // Display objects
 TFT_eSPI tft = TFT_eSPI();
@@ -81,6 +86,16 @@ void setStatus(const char* message) {
   render();
 }
 
+void printLocalTime()
+{
+  struct tm timeinfo;
+  if(!getLocalTime(&timeinfo)){
+    Serial.println("Failed to obtain time");
+    return;
+  }
+  Serial.println(&timeinfo, "%A, %B %d %Y %H:%M:%S");
+}
+
 void setup() {
   Serial.begin(9600);
 
@@ -124,6 +139,7 @@ void setup() {
   button2.attachClick([]() {
     button2_status = OFF;
     render();
+    printLocalTime();
   });
 
   // Connect to Wifi.
@@ -147,6 +163,9 @@ void setup() {
 
   setStatus("Connected");
   Serial.println(WiFi.localIP());
+
+  configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
+  printLocalTime();
 }
 
 void loop() {
