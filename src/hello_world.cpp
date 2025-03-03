@@ -149,7 +149,6 @@ void setup() {
   while (WiFi.status() != WL_CONNECTED) {
     if (WiFi.status() == WL_CONNECT_FAILED) {
       setStatus("Failed to connect to WiFi");
-      return;
     }
     delay(5000);
   }
