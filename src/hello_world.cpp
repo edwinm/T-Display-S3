@@ -157,8 +157,9 @@ void setup() {
   setStatus("Connected");
   Serial.println(WiFi.localIP());
 
-  myTZ.setLocation(TIMEZONE);
-  waitForSync();
+  if (!myTZ.setCache(0)) {
+    myTZ.setLocation(TIMEZONE);
+  }
 }
 
 void loop() {
