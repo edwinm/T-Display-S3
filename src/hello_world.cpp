@@ -29,7 +29,7 @@ enum button_status {
 // Colors
 #define BACKGROUND TFT_BLACK
 #define STATUS_FG TFT_WHITE
-#define STATUS_BG TFT_DARKGREEN
+#define STATUS_BG 0x104a // Very dark green. See https://rgbcolorpicker.com/565
 
 // Display objects
 TFT_eSPI tft = TFT_eSPI();
