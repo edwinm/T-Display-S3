@@ -47,6 +47,8 @@ Timezone myTZ;
 
 const char* status = NULL;
 
+String timeShown = "";
+
 void render() {
   // Clear the screen
   tft.fillScreen(BACKGROUND);
@@ -61,6 +63,8 @@ void render() {
     
     // Draw text - parameters: text, x, y, font
     sprite.drawString(status, STATUS_W/2, STATUS_H/2, 2);
+  } else {
+    sprite.drawString(timeShown, STATUS_W/2, STATUS_H/2, 2);
   }
   
   // Push to display
@@ -75,6 +79,14 @@ void render() {
   }
 }
 
+void renderTime() {
+  const String currentTime = myTZ.dateTime("H:i");
+  if (currentTime != timeShown) {
+    timeShown = currentTime;
+    render();
+  }
+}
+
 uint32_t getVolt() {
   return (analogRead(PIN_BAT_VOLT) * 2 * 3.3 * 1000) / 4096;
 }
@@ -86,7 +98,7 @@ void setStatus(const char* message) {
 
 void printLocalTime()
 {
-  Serial.println(myTZ.dateTime());
+  Serial.println(myTZ.dateTime("H:i"));
 }
 
 void setup() {
@@ -153,7 +165,7 @@ void setup() {
     delay(5000);
   }
 
-  setStatus("Connected");
+  setStatus(NULL);
   Serial.println(WiFi.localIP());
 
   if (!myTZ.setCache(0)) {
@@ -165,5 +177,6 @@ void loop() {
   button1.tick();
   button2.tick();
   events();
-  delay(10); // Add a delay to reduce power consumption
+  renderTime();
+  delay(20); // Add a delay to reduce power consumption
 }
