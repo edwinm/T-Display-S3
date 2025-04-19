@@ -31,7 +31,8 @@ enum button_status {
 #define BACKGROUND TFT_BLACK
 #define STATUS_FG TFT_WHITE
 #define STATUS_BG 0x104a // Very dark green. See https://rgbcolorpicker.com/565
-#define CLOCK_FG TFT_ORANGE
+#define CLOCK_YELLOW 0xfd00
+#define CLOCK_GREY TFT_LIGHTGREY
 
 
 // Display objects
@@ -52,6 +53,9 @@ const char* status = NULL;
 
 String timeShown = "";
 
+bool is24 = true;
+bool isYellow = true;
+
 void render() {
   // Clear the screen
   tft.fillScreen(BACKGROUND);
@@ -70,8 +74,9 @@ void render() {
     // Push to display
     sprite.pushSprite((WIDTH-STATUS_W) / 2, (HEIGHT-STATUS_H) / 2);
   } else {
-    tft.setTextColor(CLOCK_FG, BACKGROUND);
-    tft.drawString(timeShown, 2, 32);
+    tft.setTextColor(isYellow ? CLOCK_YELLOW : CLOCK_GREY, BACKGROUND);
+    int textWidth = tft.textWidth(timeShown);
+    tft.drawString(timeShown, 320 - textWidth, 45);
   }
   
 
@@ -85,7 +90,8 @@ void render() {
 }
 
 void renderTime() {
-  const String currentTime = myTZ.dateTime("H:i");
+  const char* format = is24 ? "H:i" : "h:i";
+  const String currentTime = myTZ.dateTime(format);
   if (currentTime != timeShown) {
     timeShown = currentTime;
     render();
@@ -99,11 +105,6 @@ uint32_t getVolt() {
 void setStatus(const char* message) {
   status = message;
   render();
-}
-
-void printLocalTime()
-{
-  Serial.println(myTZ.dateTime("H:i"));
 }
 
 void setup() {
@@ -138,6 +139,7 @@ void setup() {
     // Serial.print(volt);
     // Serial.println(" millivolt");
     button1_status = OFF;
+    is24 = !is24;
     render();
   });
 
@@ -148,12 +150,12 @@ void setup() {
 
   button2.attachClick([]() {
     button2_status = OFF;
+    isYellow = !isYellow;
     render();
-    printLocalTime();
   });
 
   // Connect to Wifi.
-  char buffer[100]; // SSID max length is 32
+  char buffer[100]; // SSID max length is 32 + status text length
   sprintf(buffer, "Connecting to %s", WIFI_SSID);
   setStatus(buffer);
 
@@ -189,9 +191,6 @@ void setup() {
   tft.loadFont("BungeeRegular105");
 
   setStatus(NULL);
-
-
-
 }
 
 void loop() {
