@@ -1,9 +1,10 @@
 #include <TFT_eSPI.h>
 #include <OneButton.h>
+#include <FS.h>
 #include <ezTime.h>
 #include "WiFi.h"
 #include "pins.h"
-#include "user_data.h";
+#include "user_data.h"
 
 // Documentation
 // TFT_eSPI       https://github.com/Bodmer/TFT_eSPI#readme
@@ -64,6 +65,7 @@ void render() {
     // Draw text - parameters: text, x, y, font
     sprite.drawString(status, STATUS_W/2, STATUS_H/2, 2);
   } else {
+    
     sprite.drawString(timeShown, STATUS_W/2, STATUS_H/2, 2);
   }
   
@@ -165,12 +167,28 @@ void setup() {
     delay(5000);
   }
 
-  setStatus(NULL);
   Serial.println(WiFi.localIP());
 
   if (!myTZ.setCache(0)) {
     myTZ.setLocation(TIMEZONE);
   }
+
+  if (!SPIFFS.begin()) {
+    setStatus("SPIFFS initialisation failed!");
+    while (1) yield();
+  }
+
+  if (!SPIFFS.exists("/BungeeRegular28.vlw")) {
+    setStatus("Font missing in SPIFFS!");
+    while (1) yield();
+  }
+
+  sprite.loadFont("BungeeRegular28");
+
+  setStatus(NULL);
+
+
+
 }
 
 void loop() {

@@ -1,5 +1,9 @@
-# Generic Lilygo T-Display-S3 project
+# Clock for Lilygo T-Display-S3
 
-| ESP32-S3 1.9 inch ST7789 LCD Display Touch Screen Development Board
+Clock using the Bungee font
 
-This can be used as a starter project
+First upload the font to flash:
+
+PlatformIO sidebar → Project Tasks → clock → Platform → Upload Filesystem Image
+
+To generate the .vlw font file, run `Create_font.pde`. Make sure Processing is installed.
