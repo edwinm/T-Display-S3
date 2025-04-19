@@ -27,6 +27,9 @@ enum button_status {
 #define STATUS_W 250
 #define STATUS_H 30
 
+// Clock
+#define CLOCK_HEIGHT 105
+
 // Colors
 #define BACKGROUND TFT_BLACK
 #define STATUS_FG TFT_WHITE
@@ -37,7 +40,8 @@ enum button_status {
 
 // Display objects
 TFT_eSPI tft = TFT_eSPI();
-TFT_eSprite sprite = TFT_eSprite(&tft);
+TFT_eSprite statusSprite = TFT_eSprite(&tft);
+TFT_eSprite clockSprite = TFT_eSprite(&tft);
 
 // Buttons
 button_status button1_status = OFF;
@@ -57,35 +61,41 @@ bool is24 = true;
 bool isYellow = true;
 
 void render() {
-  // Clear the screen
-  tft.fillScreen(BACKGROUND);
-
   if (status) {
+    // Clear the screen
+    tft.fillScreen(BACKGROUND);
+
     // Clear the sprite
-    sprite.fillSprite(STATUS_BG);
+    statusSprite.fillSprite(STATUS_BG);
   
       // Set text properties
-    sprite.setTextColor(STATUS_FG, STATUS_BG);
-    sprite.setTextDatum(MC_DATUM); // Middle center alignment
+    statusSprite.setTextColor(STATUS_FG, STATUS_BG);
+    statusSprite.setTextDatum(MC_DATUM); // Middle center alignment
     
     // Draw text - parameters: text, x, y, font
-    sprite.drawString(status, STATUS_W/2, STATUS_H/2, 2);
+    statusSprite.drawString(status, STATUS_W/2, STATUS_H/2, 2);
 
     // Push to display
-    sprite.pushSprite((WIDTH-STATUS_W) / 2, (HEIGHT-STATUS_H) / 2);
+    statusSprite.pushSprite((WIDTH-STATUS_W) / 2, (HEIGHT-STATUS_H) / 2);
   } else {
-    tft.setTextColor(isYellow ? CLOCK_YELLOW : CLOCK_GREY, BACKGROUND);
-    int textWidth = tft.textWidth(timeShown);
-    tft.drawString(timeShown, 320 - textWidth, 45);
+    clockSprite.fillSprite(BACKGROUND);
+    clockSprite.setTextColor(isYellow ? CLOCK_YELLOW : CLOCK_GREY, BACKGROUND);
+    int textWidth = clockSprite.textWidth(timeShown);
+    clockSprite.drawString(timeShown, 320 - textWidth, 0);
+    clockSprite.pushSprite(0, 45);
   }
   
 
   if (button1_status == ON) {
     tft.fillRect(WIDTH-8, HEIGHT-40, 8, 40, TFT_LIGHTGREY);
+  } else {
+    tft.fillRect(WIDTH-8, HEIGHT-40, 8, 40, BACKGROUND);
   }
 
   if (button2_status == ON) {
     tft.fillRect(WIDTH-8, 0, 8, 40, TFT_LIGHTGREY);
+  } else {
+    tft.fillRect(WIDTH-8, 0, 8, 40, BACKGROUND);
   }
 }
 
@@ -114,7 +124,8 @@ void setup() {
   tft.init();
   tft.setRotation(1);
   tft.fillScreen(BACKGROUND);
-  sprite.createSprite(STATUS_W, STATUS_H);
+  statusSprite.createSprite(STATUS_W, STATUS_H);
+  clockSprite.createSprite(WIDTH, CLOCK_HEIGHT);
   
   // Set display brightness
   ledcSetup(BRIGHTNESS_CHANNEL, 10000, 8);
@@ -183,12 +194,12 @@ void setup() {
     while (1) yield();
   }
 
-  if (!SPIFFS.exists("/BungeeRegular105.vlw")) {
+  if (!SPIFFS.exists("/BungeeRegular100.vlw")) {
     setStatus("Font missing in SPIFFS!");
     while (1) yield();
   }
 
-  tft.loadFont("BungeeRegular105");
+  clockSprite.loadFont("BungeeRegular100");
 
   setStatus(NULL);
 }
