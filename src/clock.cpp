@@ -31,6 +31,8 @@ enum button_status {
 #define BACKGROUND TFT_BLACK
 #define STATUS_FG TFT_WHITE
 #define STATUS_BG 0x104a // Very dark green. See https://rgbcolorpicker.com/565
+#define CLOCK_FG TFT_ORANGE
+
 
 // Display objects
 TFT_eSPI tft = TFT_eSPI();
@@ -54,23 +56,24 @@ void render() {
   // Clear the screen
   tft.fillScreen(BACKGROUND);
 
-  // Clear the sprite
-  sprite.fillSprite(STATUS_BG);
-  
   if (status) {
+    // Clear the sprite
+    sprite.fillSprite(STATUS_BG);
+  
       // Set text properties
     sprite.setTextColor(STATUS_FG, STATUS_BG);
     sprite.setTextDatum(MC_DATUM); // Middle center alignment
     
     // Draw text - parameters: text, x, y, font
     sprite.drawString(status, STATUS_W/2, STATUS_H/2, 2);
+
+    // Push to display
+    sprite.pushSprite((WIDTH-STATUS_W) / 2, (HEIGHT-STATUS_H) / 2);
   } else {
-    
-    sprite.drawString(timeShown, STATUS_W/2, STATUS_H/2, 2);
+    tft.setTextColor(CLOCK_FG, BACKGROUND);
+    tft.drawString(timeShown, 2, 32);
   }
   
-  // Push to display
-  sprite.pushSprite((WIDTH-STATUS_W) / 2, (HEIGHT-STATUS_H) / 2);
 
   if (button1_status == ON) {
     tft.fillRect(WIDTH-8, HEIGHT-40, 8, 40, TFT_LIGHTGREY);
@@ -178,12 +181,12 @@ void setup() {
     while (1) yield();
   }
 
-  if (!SPIFFS.exists("/BungeeRegular28.vlw")) {
+  if (!SPIFFS.exists("/BungeeRegular105.vlw")) {
     setStatus("Font missing in SPIFFS!");
     while (1) yield();
   }
 
-  sprite.loadFont("BungeeRegular28");
+  tft.loadFont("BungeeRegular105");
 
   setStatus(NULL);
 
