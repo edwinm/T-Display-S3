@@ -6,13 +6,15 @@ Clock using the Bungee font.
 
 Use [PlatformIO](https://platformio.org/) to upload the code to a [Lilygo T-Display-S3](https://lilygo.cc/products/t-display-s3?variant=42284559827125).
 
-First upload the font to flash:
+1. First edit `src/user_data.h` and fill in your WiFi access point name, password and timezone.
 
-PlatformIO sidebar → Project Tasks → clock → Platform → Upload Filesystem Image
+2. Upload the font to flash:
 
-Then upload the code:
+   PlatformIO sidebar → Project Tasks → clock → Platform → Upload Filesystem Image
 
-PlatformIO sidebar → Project Tasks → clock → General → Upload
+3. Then upload the code:
+
+   PlatformIO sidebar → Project Tasks → clock → General → Upload
 
 # Generate font
 
