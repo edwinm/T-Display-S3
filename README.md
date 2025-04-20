@@ -1,4 +1,4 @@
-# Clock for Lilygo T-Display-S3
+# Bungee Clock for Lilygo T-Display-S3
 
 Clock using the Bungee font.
 
