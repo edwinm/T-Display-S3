@@ -8,7 +8,9 @@ PlatformIO sidebar → Project Tasks → clock → Platform → Upload Filesyste
 
 To generate the .vlw font file, run `Create_font.pde`. Make sure Processing is installed.
 
-Buttons
+Button functions
 
-A: Switch between yellow and grey
-B: Switch between 24 and 12 hour notation
+- A: Switch between yellow and grey
+- B: Switch between 24 and 12 hour notation
+
+![Photo of the device.](assets/clock.jpeg)
