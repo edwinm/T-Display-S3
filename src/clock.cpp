@@ -1,6 +1,6 @@
 #include <TFT_eSPI.h>
 #include <OneButton.h>
-#include <FS.h>
+#include <SPIFFS.h>
 #include <ezTime.h>
 #include "WiFi.h"
 #include "pins.h"
@@ -85,18 +85,8 @@ void render() {
     clockSprite.pushSprite(0, 45);
   }
   
-
-  if (button1_status == ON) {
-    tft.fillRect(WIDTH-8, HEIGHT-40, 8, 40, TFT_LIGHTGREY);
-  } else {
-    tft.fillRect(WIDTH-8, HEIGHT-40, 8, 40, BACKGROUND);
-  }
-
-  if (button2_status == ON) {
-    tft.fillRect(WIDTH-8, 0, 8, 40, TFT_LIGHTGREY);
-  } else {
-    tft.fillRect(WIDTH-8, 0, 8, 40, BACKGROUND);
-  }
+  tft.fillRect(WIDTH-8, HEIGHT-40, 8, 40, button1_status == ON ? TFT_LIGHTGREY : BACKGROUND);
+  tft.fillRect(WIDTH-8, 0, 8, 40, button2_status == ON ? TFT_LIGHTGREY : BACKGROUND);
 }
 
 void renderTime() {
@@ -108,7 +98,7 @@ void renderTime() {
   }
 }
 
-uint32_t getVolt() {
+uint32_t getMilliVolt() {
   return (analogRead(PIN_BAT_VOLT) * 2 * 3.3 * 1000) / 4096;
 }
 
@@ -135,20 +125,12 @@ void setup() {
   // Draw the static content
   setStatus("Starting up");
 
-  // Giving it a little time because the serial monitor doesn't
-  // immediately attach. Want the firmware that's running to
-  // appear on each upload.
-  delay(1000);
-
   button1.attachPress([]() {
     button1_status = ON;
     render();
   });
 
   button1.attachClick([]() {
-    // const uint16_t volt = getVolt();
-    // Serial.print(volt);
-    // Serial.println(" millivolt");
     button1_status = OFF;
     is24 = !is24;
     render();
@@ -190,12 +172,12 @@ void setup() {
   }
 
   if (!SPIFFS.begin()) {
-    setStatus("SPIFFS initialisation failed!");
+    setStatus("Flash memory initialisation failed");
     while (1) yield();
   }
 
   if (!SPIFFS.exists("/BungeeRegular100.vlw")) {
-    setStatus("Font missing in SPIFFS!");
+    setStatus("Font missing in flash memory");
     while (1) yield();
   }
 
